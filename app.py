@@ -128,33 +128,10 @@ def format_num(val):
         return str(int(val))
     return f"{val:g}"
 
-# --- ФУНКЦИЯ ДЛЯ КНОПКИ "ОЧИСТИТЬ" ---
-def clear_all_data():
-    # Список ключей полей ввода, которые нужно удалить, чтобы они сбросились в 0
-    keys_to_clear = [
-        "target_length_input", "pos_tol_input", "neg_tol_input",
-        "mal_threshold_input", "mal_pct_input",
-        "kor_threshold_input", "kor_pct_input",
-        "file_uploader_input"
-    ]
-    for key in keys_to_clear:
-        if key in st.session_state:
-            del st.session_state[key]
-            
-    # Сбрасываем таблицу
-    cols = [f"Бухта {i+1}" for i in range(7)]
-    st.session_state.grid_data = pd.DataFrame(np.nan, index=range(5), columns=cols)
-    st.session_state.editor_version += 1
-    st.session_state.last_uploaded_file = None
-
-# --- ИНИЦИАЛИЗАЦИЯ СЕТКИ И ПЕРЕМЕННЫХ В ПАМЯТИ ---
+# --- ИНИЦИАЛИЗАЦИЯ ПАМЯТИ ---
 if 'grid_data' not in st.session_state:
     cols = [f"Бухта {i+1}" for i in range(7)]
-    st.session_state.grid_data = pd.DataFrame(
-        np.nan, 
-        index=range(5), 
-        columns=cols
-    )
+    st.session_state.grid_data = pd.DataFrame(np.nan, index=range(5), columns=cols)
 
 if 'editor_version' not in st.session_state:
     st.session_state.editor_version = 0
@@ -162,9 +139,32 @@ if 'editor_version' not in st.session_state:
 if 'last_uploaded_file' not in st.session_state:
     st.session_state.last_uploaded_file = None
 
+# Уникальный ключ для файла. Меняя его, мы "сбрасываем" загруженный файл
+if 'uploader_key' not in st.session_state:
+    st.session_state.uploader_key = 0
+
+# --- ФУНКЦИЯ ОЧИСТКИ ВСЕГО ---
+def clear_all_data():
+    # 1. Сбрасываем все числовые поля в 0 (явно перезаписываем их значения)
+    st.session_state.target_length_input = 0.0
+    st.session_state.pos_tol_input = 0
+    st.session_state.neg_tol_input = 0
+    st.session_state.mal_threshold_input = 0.0
+    st.session_state.mal_pct_input = 0
+    st.session_state.kor_threshold_input = 0.0
+    st.session_state.kor_pct_input = 0
+    
+    # 2. Сбрасываем файл (меняем ключ загрузчика, чтобы он создался заново пустым)
+    st.session_state.uploader_key += 1
+    st.session_state.last_uploaded_file = None
+    
+    # 3. Сбрасываем таблицу
+    cols = [f"Бухта {i+1}" for i in range(7)]
+    st.session_state.grid_data = pd.DataFrame(np.nan, index=range(5), columns=cols)
+    st.session_state.editor_version += 1
+
 # --- БОКОВАЯ ПАНЕЛЬ (НАСТРОЙКИ) ---
 st.sidebar.header("Параметры заказа")
-# Добавляем key для возможности сброса
 target_length = st.sidebar.number_input("Требуемый метраж (м)", min_value=0.0, value=0.0, step=1.0, format="%g", key="target_length_input")
 
 st.sidebar.header("Толеранс (допуск)")
@@ -180,7 +180,8 @@ kor_threshold = st.sidebar.number_input("Порог короткомера", min
 kor_pct = st.sidebar.number_input("Процент короткомеров", min_value=0, max_value=100, value=0, step=1, key="kor_pct_input") / 100.0
 
 # --- ЗАГРУЗКА ФАЙЛА ---
-uploaded_file = st.file_uploader("Внесите свои данные или загрузите Excel файл с упаковочным листом (заменит данные в таблице)", type=["xlsx", "xls", "csv"], key="file_uploader_input")
+# Используем динамический ключ st.session_state.uploader_key, чтобы можно было очистить поле
+uploaded_file = st.file_uploader("Внесите свои данные или загрузите Excel файл с упаковочным листом (заменит данные в таблице)", type=["xlsx", "xls", "csv"], key=f"file_uploader_{st.session_state.uploader_key}")
 
 if uploaded_file is not None:
     if uploaded_file != st.session_state.last_uploaded_file:
@@ -244,7 +245,7 @@ if uploaded_file is not None:
 st.write("### Таблица метражей")
 st.write("Впишите длины бухт вручную (только цифры).")
 
-# Кнопки управления (выше таблицы). Добавлена 4-я колонка для кнопки "Очистить"
+# Кнопки управления (выше таблицы)
 c1, c2, c3, c4 = st.columns([1, 1, 1, 3])
 with c1:
     if st.button("➕ Добавить строку"):
@@ -259,7 +260,7 @@ with c2:
             st.session_state.editor_version += 1
             st.rerun()
 with c3:
-    # Кнопка Очистить с вызовом функции clear_all_data
+    # Вызов функции очистки
     st.button("🗑️ Очистить", on_click=clear_all_data)
 
 # Настраиваем конфигурацию колонок (Запрет на буквы!)
