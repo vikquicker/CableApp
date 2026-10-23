@@ -41,8 +41,8 @@ st.markdown(
             width: 100%;
             text-align: center;
             padding: 10px 0;
-            background-color: #14161A; /* Цвет в тон фону */
-            color: #6B7280; /* Мягкий серый цвет текста */
+            background-color: #14161A;
+            color: #6B7280;
             font-size: 14px;
             border-top: 1px solid #2B2E38;
             z-index: 100;
@@ -120,10 +120,12 @@ st.markdown(
 
 st.title("⚡ Умный подбор кабеля")
 
-# Функция для красивого вывода чисел (убирает лишние нули, если число целое)
+# Функция для красивого вывода чисел (УБИРАЕМ МИКРОСКОПИЧЕСКУЮ ПОГРЕШНОСТЬ)
 def format_num(val):
     if val is None or pd.isna(val): return ""
     val = float(val)
+    # Округляем до 4 знаков, чтобы убрать компьютерную погрешность (8.88e-16)
+    val = round(val, 4) 
     if val.is_integer():
         return str(int(val))
     return f"{val:g}"
@@ -139,13 +141,11 @@ if 'editor_version' not in st.session_state:
 if 'last_uploaded_file' not in st.session_state:
     st.session_state.last_uploaded_file = None
 
-# Уникальный ключ для файла. Меняя его, мы "сбрасываем" загруженный файл
 if 'uploader_key' not in st.session_state:
     st.session_state.uploader_key = 0
 
 # --- ФУНКЦИЯ ОЧИСТКИ ВСЕГО ---
 def clear_all_data():
-    # 1. Сбрасываем все числовые поля в 0 (явно перезаписываем их значения)
     st.session_state.target_length_input = 0.0
     st.session_state.pos_tol_input = 0
     st.session_state.neg_tol_input = 0
@@ -154,11 +154,9 @@ def clear_all_data():
     st.session_state.kor_threshold_input = 0.0
     st.session_state.kor_pct_input = 0
     
-    # 2. Сбрасываем файл (меняем ключ загрузчика, чтобы он создался заново пустым)
     st.session_state.uploader_key += 1
     st.session_state.last_uploaded_file = None
     
-    # 3. Сбрасываем таблицу
     cols = [f"Бухта {i+1}" for i in range(7)]
     st.session_state.grid_data = pd.DataFrame(np.nan, index=range(5), columns=cols)
     st.session_state.editor_version += 1
@@ -180,7 +178,6 @@ kor_threshold = st.sidebar.number_input("Порог короткомера", min
 kor_pct = st.sidebar.number_input("Процент короткомеров", min_value=0, max_value=100, value=0, step=1, key="kor_pct_input") / 100.0
 
 # --- ЗАГРУЗКА ФАЙЛА ---
-# Используем динамический ключ st.session_state.uploader_key, чтобы можно было очистить поле
 uploaded_file = st.file_uploader("Внесите свои данные или загрузите Excel файл с упаковочным листом (заменит данные в таблице)", type=["xlsx", "xls", "csv"], key=f"file_uploader_{st.session_state.uploader_key}")
 
 if uploaded_file is not None:
@@ -245,7 +242,6 @@ if uploaded_file is not None:
 st.write("### Таблица метражей")
 st.write("Впишите длины бухт вручную (только цифры).")
 
-# Кнопки управления (выше таблицы)
 c1, c2, c3, c4 = st.columns([1, 1, 1, 3])
 with c1:
     if st.button("➕ Добавить строку"):
@@ -260,16 +256,13 @@ with c2:
             st.session_state.editor_version += 1
             st.rerun()
 with c3:
-    # Вызов функции очистки
     st.button("🗑️ Очистить", on_click=clear_all_data)
 
-# Настраиваем конфигурацию колонок (Запрет на буквы!)
 col_config = {
     col: st.column_config.NumberColumn(col, format="%g") 
     for col in st.session_state.grid_data.columns
 }
 
-# Сама редактируемая сетка.
 edited_df = st.data_editor(
     st.session_state.grid_data, 
     num_rows="fixed", 
@@ -278,10 +271,8 @@ edited_df = st.data_editor(
     key=f"main_editor_{st.session_state.editor_version}"
 )
 
-# Сохраняем изменения из таблицы в память
 st.session_state.grid_data = edited_df
 
-# Собираем все числа из таблицы
 lengths = []
 for col in edited_df.columns:
     for val in edited_df[col]:
@@ -291,7 +282,6 @@ for col in edited_df.columns:
 if not lengths:
     st.info("Введите данные в таблицу, чтобы начать расчет.")
 else:
-    # --- РЯД С КНОПКАМИ ДЕЙСТВИЙ ---
     col_btn1, col_btn2, col_btn3 = st.columns(3)
     
     with col_btn1:
@@ -303,7 +293,6 @@ else:
 
     Total = sum(lengths)
 
-    # --- РЕЖИМ 1: ПРОВЕРКА МАЛОМЕРОВ ---
     if btn_check_mal:
         mal_list = [l for l in lengths if l < mal_threshold]
         mal_total = sum(mal_list)
@@ -325,7 +314,6 @@ else:
         else:
             st.error(f"❌ Процент маломеров ПРЕВЫШЕН на {format_num(mal_total - limit)} м!")
 
-    # --- РЕЖИМ 2: ПРОВЕРКА КОРОТКОМЕРОВ ---
     elif btn_check_kor:
         kor_list = [l for l in lengths if l < kor_threshold]
         kor_total = sum(kor_list)
@@ -347,9 +335,7 @@ else:
         else:
             st.error(f"❌ Процент короткомеров ПРЕВЫШЕН на {format_num(kor_total - limit)} м!")
 
-    # --- РЕЖИМ 3: ПОДБОР БУХТ ---
     elif btn_select:
-        # Инициализируем переменные до расчетов, чтобы избежать ошибок вывода
         sel_sum = 0
         rem_sum = Total
         selected_lengths = []
@@ -384,11 +370,9 @@ else:
                     prob += Kor_Sel <= kor_pct * S
                     prob += Kor_Rem <= kor_pct * (Total - S)
                 
-                # timeLimit=5 чтобы программа не зависала на нерешаемых задачах
                 prob.solve(pulp.PULP_CBC_CMD(msg=False, timeLimit=5))
                 return prob, x, S
 
-            # 1. Пытаемся найти идеальный вариант со всеми ограничениями
             prob, x, S = solve_model(use_tolerance=True, use_limits=True)
 
             if pulp.LpStatus[prob.status] == 'Optimal':
@@ -408,16 +392,13 @@ else:
                     st.success("✅ Найден метраж с учётом толеранса!")
                     
             else:
-                # 2. Если не удалось, запускаем диагностику: ищем без ограничений процентов
                 prob_diag, x_diag, S_diag = solve_model(use_tolerance=True, use_limits=False)
                 
                 if pulp.LpStatus[prob_diag.status] == 'Optimal':
-                    # Значит, метраж есть, но лимиты блокируют
                     st.error("❌ Не удается подобрать метраж с заданными процентами.")
                     st.warning("⚠️ **Важное пояснение:** Заданный метраж есть на складе, НО если его взять, то в остатке будет превышен лимит маломеров или короткомеров.")
                     st.info("Попробуйте увеличить процент маломеров/короткомеров или добавить положительный толеранс, чтобы захватить проблемные бухты в заказ.")
                     
-                    # Показываем пользователю, ЧТО можно было бы взять без ограничений
                     sel_sum = pulp.value(S_diag)
                     selected_indices = [i for i in range(len(lengths)) if pulp.value(x_diag[i]) > 0.5]
                     selected_lengths = [lengths[i] for i in selected_indices]
@@ -426,10 +407,8 @@ else:
                     st.write(f"*(Для справки) Без учета лимитов можно было бы взять:* {', '.join([format_num(l) for l in sorted(selected_lengths, reverse=True)])}")
                     
                 else:
-                    # Метраж невозможно собрать даже без ограничений
                     st.error("❌ Заданный метраж физически невозможно собрать из имеющихся бухт (даже без учета процентов).")
                     
-                    # Показываем ближайший возможный вариант (максимально близкий к цели)
                     prob_fallback, x_fallback, S_fallback = solve_model(use_tolerance=False, use_limits=False)
                     if pulp.LpStatus[prob_fallback.status] == 'Optimal':
                         st.info("Показываем ближайший возможный вариант из имеющихся бухт:")
@@ -442,9 +421,9 @@ else:
                         st.error("Не удалось подобрать ни один вариант.")
                         selected_lengths = []
 
-            # Вывод метрик и списков, если они найдены
             if 'selected_lengths' in locals() and selected_lengths:
                 col1, col2, col3 = st.columns(3)
+                # Здесь мы теперь передаем diff через format_num, который его округлит
                 col1.metric("Подобранный метраж", f"{format_num(sel_sum)} м", f"{format_num(sel_sum - target_length)} м от цели")
                 col2.metric("Остаток", f"{format_num(Total - sel_sum)} м")
                 col3.metric("Бухт выбрано", len(selected_lengths))
@@ -452,7 +431,7 @@ else:
                 st.write("**Выбранные бухты:**", ", ".join([format_num(l) for l in sorted(selected_lengths, reverse=True)]))
                 st.write("**Оставшиеся бухты:**", ", ".join([format_num(l) for l in sorted(rem_lengths, reverse=True)]))
 
-# --- ДОБАВЛЯЕМ ФУТЕР В САМЫЙ КОНЕЦ СКРИПТА ---
+# --- ФУТЕР ---
 footer_html = """
 <div class="custom-footer">
     © 2026 Пожаров Виктор Владимирович. Все права защищены.
