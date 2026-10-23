@@ -9,26 +9,6 @@ st.set_page_config(page_title="Подбор кабеля", layout="wide", initia
 st.markdown(
     """
     <style>
-        /* --- 1. "ЯДЕРНЫЙ" ФИКС БЕЛЫХ ПОЛОС ПРИ ХОЛОДНОЙ ЗАГРУЗКЕ --- */
-        /* Красим абсолютно все базовые уровни DOM, включая html, body и корневые контейнеры */
-        html, body, #root, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
-            background: #14161A !important;
-            background-color: #14161A !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            min-height: 100vh !important;
-        }
-        
-        /* Убираем белый фон у полосы прокрутки (если она есть) */
-        ::-webkit-scrollbar {
-            background-color: #14161A !important;
-            width: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background-color: #2B2E38 !important;
-            border-radius: 5px;
-        }
-
         /* Полностью УДАЛЯЕМ стандартный футер Streamlit, чтобы он не занимал место */
         footer, [data-testid="stFooter"] {
             display: none !important;
@@ -41,7 +21,6 @@ st.markdown(
         /* Добавляем отступ снизу основному контенту, чтобы он не залезал под наш футер */
         [data-testid="stMainBlockContainer"] {
             padding-bottom: 60px !important; 
-            background-color: #14161A !important;
         }
 
         /* Убираем верхнюю белую полосу (Header) */
@@ -49,11 +28,8 @@ st.markdown(
             background-color: transparent !important;
             background: transparent !important;
         }
-        [data-testid="stDecoration"] {
-            display: none !important;
-        }
         
-        /* --- 2. СТИЛИ ДЛЯ НАШЕГО КАСТОМНОГО ФУТЕРА --- */
+        /* --- СТИЛИ ДЛЯ НАШЕГО КАСТОМНОГО ФУТЕРА --- */
         .custom-footer {
             position: fixed;
             bottom: 0;
@@ -70,13 +46,7 @@ st.markdown(
             z-index: 999999;
         }
         
-        /* --- 3. ОФОРМЛЕНИЕ ОСТАЛЬНЫХ ЭЛЕМЕНТОВ --- */
-        /* Боковая панель */
-        [data-testid="stSidebar"] {
-            background-color: #1A1D24;
-            border-right: 1px solid #2B2E38;
-        }
-        
+        /* --- ОФОРМЛЕНИЕ ОСТАЛЬНЫХ ЭЛЕМЕНТОВ --- */
         /* Отключаем прокрутку и скрываем кнопку сворачивания в боковой панели */
         [data-testid="stSidebar"] > div:first-child {
             overflow: hidden;
@@ -86,18 +56,6 @@ st.markdown(
         }
         [data-testid="collapsedControl"] {
             display: none;
-        }
-        
-        /* Заголовки (Золотистый цвет) */
-        h1, h2, h3 {
-            color: #E8C55F !important;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        
-        /* Текст и подписи */
-        p, span, label {
-            color: #D1D5DB !important;
         }
         
         /* Кнопки */
@@ -125,7 +83,6 @@ st.markdown(
         
         /* Таблица (Data Editor) */
         [data-testid="stDataFrame"] {
-            background-color: #1A1D24;
             border: 1px solid #2B2E38;
             border-radius: 8px;
         }
