@@ -23,6 +23,16 @@ st.markdown(
         footer {
             visibility: hidden;
         }
+
+        /* --- УБИРАЕМ ВЕРХНЮЮ БЕЛУЮ ПОЛОСУ --- */
+        [data-testid="stHeader"] {
+            background-color: transparent !important;
+            background: transparent !important;
+        }
+        [data-testid="stDecoration"] {
+            display: none !important;
+        }
+        /* ---------------------------------- */
         
         /* Боковая панель */
         [data-testid="stSidebar"] {
