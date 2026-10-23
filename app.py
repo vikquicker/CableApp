@@ -9,14 +9,24 @@ st.set_page_config(page_title="Подбор кабеля", layout="wide", initia
 st.markdown(
     """
     <style>
-        /* --- ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС --- */
+        /* --- 1. ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС --- */
         /* Красим абсолютно все базовые контейнеры страницы в темный цвет */
         html, body, [data-testid="stAppViewContainer"], .stApp, [data-testid="stMain"] {
             background-color: #14161A !important;
             min-height: 100vh;
         }
         
-        /* Полностью УДАЛЯЕМ стандартный футер (чтобы он не оставлял белое место) */
+        /* Убираем белый фон у полосы прокрутки (если она есть) */
+        ::-webkit-scrollbar {
+            background-color: #14161A !important;
+        }
+        
+        /* Убираем нижний отступ у главного контейнера с контентом */
+        [data-testid="stMainBlockContainer"] {
+            padding-bottom: 0rem !important;
+        }
+
+        /* Полностью УДАЛЯЕМ стандартный футер */
         footer {
             display: none !important;
         }
@@ -30,7 +40,7 @@ st.markdown(
             display: none !important;
         }
         
-        /* --- СТИЛИ ДЛЯ НАШЕГО ФУТЕРА --- */
+        /* --- 2. СТИЛИ ДЛЯ НАШЕГО КАСТОМНОГО ФУТЕРА --- */
         .custom-footer {
             position: fixed;
             bottom: 0;
@@ -45,6 +55,7 @@ st.markdown(
             z-index: 100;
         }
         
+        /* --- 3. ОФОРМЛЕНИЕ ОСТАЛЬНЫХ ЭЛЕМЕНТОВ --- */
         /* Боковая панель */
         [data-testid="stSidebar"] {
             background-color: #1A1D24;
