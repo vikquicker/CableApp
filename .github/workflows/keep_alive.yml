@@ -1,0 +1,19 @@
+name: Keep Streamlit App Awake
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Запуск каждые 6 часов
+  workflow_dispatch:        # Позволяет запускать вручную
+
+jobs:
+  keep_alive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create empty commit
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git commit --allow-empty -m "Keep alive: prevent sleep mode"
+          git push
