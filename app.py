@@ -9,29 +9,31 @@ st.set_page_config(page_title="Подбор кабеля", layout="wide", initia
 st.markdown(
     """
     <style>
-        /* --- 1. ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС --- */
-        /* Красим абсолютно все базовые контейнеры страницы в темный цвет */
-        html, body, [data-testid="stAppViewContainer"], .stApp, [data-testid="stMain"] {
+        /* --- 1. ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС (ХОЛОДНАЯ ЗАГРУЗКА) --- */
+        /* Красим абсолютно все базовые уровни DOM, включая html и body */
+        html, body, #root, .stApp, [data-testid="stAppViewContainer"] {
             background-color: #14161A !important;
-            min-height: 100vh;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 100vh !important;
+            height: 100% !important;
         }
         
-        /* Убираем белый фон у полосы прокрутки (если она есть) */
-        ::-webkit-scrollbar {
-            background-color: #14161A !important;
-        }
-        
-        /* Убираем нижний отступ у главного контейнера с контентом */
-        [data-testid="stMainBlockContainer"] {
-            padding-bottom: 0rem !important;
-        }
-
-        /* Полностью УДАЛЯЕМ стандартный футер */
-        footer {
+        /* Полностью УДАЛЯЕМ стандартный футер Streamlit, чтобы он не занимал место */
+        footer, [data-testid="stFooter"] {
             display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
         }
 
-        /* Убираем верхнюю белую полосу */
+        /* Добавляем отступ снизу основному контенту, чтобы он не залезал под наш футер */
+        [data-testid="stMainBlockContainer"] {
+            padding-bottom: 60px !important; 
+        }
+
+        /* Убираем верхнюю белую полосу (Header) */
         [data-testid="stHeader"] {
             background-color: transparent !important;
             background: transparent !important;
@@ -52,7 +54,7 @@ st.markdown(
             color: #6B7280;
             font-size: 14px;
             border-top: 1px solid #2B2E38;
-            z-index: 100;
+            z-index: 999;
         }
         
         /* --- 3. ОФОРМЛЕНИЕ ОСТАЛЬНЫХ ЭЛЕМЕНТОВ --- */
