@@ -9,22 +9,19 @@ st.set_page_config(page_title="Подбор кабеля", layout="wide", initia
 st.markdown(
     """
     <style>
-        /* Основной фон приложения (темно-графитовый) */
-        .stApp {
-            background-color: #14161A;
-            color: #D1D5DB;
-        }
-        
-        /* Закрашиваем пустое белое пространство снизу и убираем стандартный футер */
-        body, html, [data-testid="stAppViewContainer"] {
+        /* --- ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС --- */
+        /* Красим абсолютно все базовые контейнеры страницы в темный цвет */
+        html, body, [data-testid="stAppViewContainer"], .stApp, [data-testid="stMain"] {
             background-color: #14161A !important;
             min-height: 100vh;
         }
+        
+        /* Полностью УДАЛЯЕМ стандартный футер (чтобы он не оставлял белое место) */
         footer {
-            visibility: hidden;
+            display: none !important;
         }
 
-        /* --- УБИРАЕМ ВЕРХНЮЮ БЕЛУЮ ПОЛОСУ --- */
+        /* Убираем верхнюю белую полосу */
         [data-testid="stHeader"] {
             background-color: transparent !important;
             background: transparent !important;
@@ -47,7 +44,6 @@ st.markdown(
             border-top: 1px solid #2B2E38;
             z-index: 100;
         }
-        /* ---------------------------------- */
         
         /* Боковая панель */
         [data-testid="stSidebar"] {
@@ -120,11 +116,10 @@ st.markdown(
 
 st.title("⚡ Умный подбор кабеля")
 
-# Функция для красивого вывода чисел (УБИРАЕМ МИКРОСКОПИЧЕСКУЮ ПОГРЕШНОСТЬ)
+# Функция для красивого вывода чисел (убирает микроскопическую погрешность)
 def format_num(val):
     if val is None or pd.isna(val): return ""
     val = float(val)
-    # Округляем до 4 знаков, чтобы убрать компьютерную погрешность (8.88e-16)
     val = round(val, 4) 
     if val.is_integer():
         return str(int(val))
@@ -423,7 +418,6 @@ else:
 
             if 'selected_lengths' in locals() and selected_lengths:
                 col1, col2, col3 = st.columns(3)
-                # Здесь мы теперь передаем diff через format_num, который его округлит
                 col1.metric("Подобранный метраж", f"{format_num(sel_sum)} м", f"{format_num(sel_sum - target_length)} м от цели")
                 col2.metric("Остаток", f"{format_num(Total - sel_sum)} м")
                 col3.metric("Бухт выбрано", len(selected_lengths))
