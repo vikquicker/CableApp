@@ -128,6 +128,25 @@ def format_num(val):
         return str(int(val))
     return f"{val:g}"
 
+# --- ФУНКЦИЯ ДЛЯ КНОПКИ "ОЧИСТИТЬ" ---
+def clear_all_data():
+    # Список ключей полей ввода, которые нужно удалить, чтобы они сбросились в 0
+    keys_to_clear = [
+        "target_length_input", "pos_tol_input", "neg_tol_input",
+        "mal_threshold_input", "mal_pct_input",
+        "kor_threshold_input", "kor_pct_input",
+        "file_uploader_input"
+    ]
+    for key in keys_to_clear:
+        if key in st.session_state:
+            del st.session_state[key]
+            
+    # Сбрасываем таблицу
+    cols = [f"Бухта {i+1}" for i in range(7)]
+    st.session_state.grid_data = pd.DataFrame(np.nan, index=range(5), columns=cols)
+    st.session_state.editor_version += 1
+    st.session_state.last_uploaded_file = None
+
 # --- ИНИЦИАЛИЗАЦИЯ СЕТКИ И ПЕРЕМЕННЫХ В ПАМЯТИ ---
 if 'grid_data' not in st.session_state:
     cols = [f"Бухта {i+1}" for i in range(7)]
@@ -145,22 +164,23 @@ if 'last_uploaded_file' not in st.session_state:
 
 # --- БОКОВАЯ ПАНЕЛЬ (НАСТРОЙКИ) ---
 st.sidebar.header("Параметры заказа")
-target_length = st.sidebar.number_input("Требуемый метраж (м)", min_value=0.0, value=0.0, step=1.0, format="%g")
+# Добавляем key для возможности сброса
+target_length = st.sidebar.number_input("Требуемый метраж (м)", min_value=0.0, value=0.0, step=1.0, format="%g", key="target_length_input")
 
 st.sidebar.header("Толеранс (допуск)")
 pos_tol = st.sidebar.number_input("Положительный толеранс (%)", min_value=0, max_value=100, value=0, step=1, key="pos_tol_input") / 100.0
 neg_tol = st.sidebar.number_input("Отрицательный толеранс (%)", min_value=0, max_value=100, value=0, step=1, key="neg_tol_input") / 100.0
 
 st.sidebar.header("Правила маломеров")
-mal_threshold = st.sidebar.number_input("Строительная длина", min_value=0.0, value=0.0, step=1.0, format="%g")
+mal_threshold = st.sidebar.number_input("Строительная длина", min_value=0.0, value=0.0, step=1.0, format="%g", key="mal_threshold_input")
 mal_pct = st.sidebar.number_input("Процент маломеров", min_value=0, max_value=100, value=0, step=1, key="mal_pct_input") / 100.0
 
 st.sidebar.header("Правила короткомеров")
-kor_threshold = st.sidebar.number_input("Порог короткомера", min_value=0.0, value=0.0, step=1.0, format="%g")
+kor_threshold = st.sidebar.number_input("Порог короткомера", min_value=0.0, value=0.0, step=1.0, format="%g", key="kor_threshold_input")
 kor_pct = st.sidebar.number_input("Процент короткомеров", min_value=0, max_value=100, value=0, step=1, key="kor_pct_input") / 100.0
 
 # --- ЗАГРУЗКА ФАЙЛА ---
-uploaded_file = st.file_uploader("Внесите свои данные или загрузите Excel файл с упаковочным листом (заменит данные в таблице)", type=["xlsx", "xls", "csv"])
+uploaded_file = st.file_uploader("Внесите свои данные или загрузите Excel файл с упаковочным листом (заменит данные в таблице)", type=["xlsx", "xls", "csv"], key="file_uploader_input")
 
 if uploaded_file is not None:
     if uploaded_file != st.session_state.last_uploaded_file:
@@ -224,8 +244,8 @@ if uploaded_file is not None:
 st.write("### Таблица метражей")
 st.write("Впишите длины бухт вручную (только цифры).")
 
-# Кнопки управления (выше таблицы)
-c1, c2, c3 = st.columns([1, 1, 4])
+# Кнопки управления (выше таблицы). Добавлена 4-я колонка для кнопки "Очистить"
+c1, c2, c3, c4 = st.columns([1, 1, 1, 3])
 with c1:
     if st.button("➕ Добавить строку"):
         new_row = pd.DataFrame(np.nan, index=[0], columns=st.session_state.grid_data.columns)
@@ -238,6 +258,9 @@ with c2:
             st.session_state.grid_data = st.session_state.grid_data.iloc[:-1].reset_index(drop=True)
             st.session_state.editor_version += 1
             st.rerun()
+with c3:
+    # Кнопка Очистить с вызовом функции clear_all_data
+    st.button("🗑️ Очистить", on_click=clear_all_data)
 
 # Настраиваем конфигурацию колонок (Запрет на буквы!)
 col_config = {
