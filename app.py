@@ -9,16 +9,26 @@ st.set_page_config(page_title="Подбор кабеля", layout="wide", initia
 st.markdown(
     """
     <style>
-        /* --- 1. ГЛОБАЛЬНОЕ ИСПРАВЛЕНИЕ БЕЛЫХ ПОЛОС (ХОЛОДНАЯ ЗАГРУЗКА) --- */
-        /* Красим абсолютно все базовые уровни DOM, включая html и body */
-        html, body, #root, .stApp, [data-testid="stAppViewContainer"] {
+        /* --- 1. "ЯДЕРНЫЙ" ФИКС БЕЛЫХ ПОЛОС ПРИ ХОЛОДНОЙ ЗАГРУЗКЕ --- */
+        /* Красим абсолютно все базовые уровни DOM, включая html, body и корневые контейнеры */
+        html, body, #root, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+            background: #14161A !important;
             background-color: #14161A !important;
             margin: 0 !important;
             padding: 0 !important;
             min-height: 100vh !important;
-            height: 100% !important;
         }
         
+        /* Убираем белый фон у полосы прокрутки (если она есть) */
+        ::-webkit-scrollbar {
+            background-color: #14161A !important;
+            width: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #2B2E38 !important;
+            border-radius: 5px;
+        }
+
         /* Полностью УДАЛЯЕМ стандартный футер Streamlit, чтобы он не занимал место */
         footer, [data-testid="stFooter"] {
             display: none !important;
@@ -31,6 +41,7 @@ st.markdown(
         /* Добавляем отступ снизу основному контенту, чтобы он не залезал под наш футер */
         [data-testid="stMainBlockContainer"] {
             padding-bottom: 60px !important; 
+            background-color: #14161A !important;
         }
 
         /* Убираем верхнюю белую полосу (Header) */
@@ -48,13 +59,15 @@ st.markdown(
             bottom: 0;
             left: 0;
             width: 100%;
-            text-align: center;
-            padding: 10px 0;
-            background-color: #14161A;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #14161A !important;
             color: #6B7280;
             font-size: 14px;
             border-top: 1px solid #2B2E38;
-            z-index: 999;
+            z-index: 999999;
         }
         
         /* --- 3. ОФОРМЛЕНИЕ ОСТАЛЬНЫХ ЭЛЕМЕНТОВ --- */
