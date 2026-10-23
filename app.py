@@ -15,7 +15,7 @@ st.markdown(
             color: #D1D5DB;
         }
         
-        /* Закрашиваем пустое белое пространство снизу и убираем футер */
+        /* Закрашиваем пустое белое пространство снизу и убираем стандартный футер */
         body, html, [data-testid="stAppViewContainer"] {
             background-color: #14161A !important;
             min-height: 100vh;
@@ -31,6 +31,21 @@ st.markdown(
         }
         [data-testid="stDecoration"] {
             display: none !important;
+        }
+        
+        /* --- СТИЛИ ДЛЯ НАШЕГО ФУТЕРА --- */
+        .custom-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 10px 0;
+            background-color: #14161A; /* Цвет в тон фону */
+            color: #6B7280; /* Мягкий серый цвет текста */
+            font-size: 14px;
+            border-top: 1px solid #2B2E38;
+            z-index: 100;
         }
         /* ---------------------------------- */
         
@@ -412,3 +427,11 @@ else:
                 
                 st.write("**Выбранные бухты:**", ", ".join([format_num(l) for l in sorted(selected_lengths, reverse=True)]))
                 st.write("**Оставшиеся бухты:**", ", ".join([format_num(l) for l in sorted(rem_lengths, reverse=True)]))
+
+# --- ДОБАВЛЯЕМ ФУТЕР В САМЫЙ КОНЕЦ СКРИПТА ---
+footer_html = """
+<div class="custom-footer">
+    © 2026 Пожаров Виктор Владимирович. Все права защищены.
+</div>
+"""
+st.markdown(footer_html, unsafe_allow_html=True)
